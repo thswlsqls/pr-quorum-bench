@@ -1,0 +1,14 @@
+{
+  "name": "pr-quorum-bench",
+  "version": "1.0.0",
+  "description": "A tiny JSON notes API on node:http with signed bearer tokens",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
