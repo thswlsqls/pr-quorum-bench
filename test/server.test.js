@@ -64,3 +64,13 @@ test('empty text is rejected', () =>
     const res = await call(base, 'POST', '/notes', { user: 'alice', body: { text: '  ' } });
     assert.equal(res.status, 400);
   }));
+
+test('listing returns the owner notes on the first page', () =>
+  withServer(async (base) => {
+    await call(base, 'POST', '/notes', { user: 'alice', body: { text: 'one' } });
+    await call(base, 'POST', '/notes', { user: 'alice', body: { text: 'two' } });
+    await call(base, 'POST', '/notes', { user: 'bob', body: { text: 'other' } });
+    const res = await call(base, 'GET', '/notes', { user: 'alice' });
+    const body = await res.json();
+    assert.deepEqual(body.items.map((n) => n.text), ['one', 'two']);
+  }));

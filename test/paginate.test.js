@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parsePageParams } = require('../src/paginate');
+const { parsePageParams, paginate } = require('../src/paginate');
 
 test('parsePageParams applies defaults', () => {
   assert.deepEqual(parsePageParams({}), { page: 1, size: 20 });
@@ -17,4 +17,19 @@ test('parsePageParams rejects out-of-range values', () => {
   assert.throws(() => parsePageParams({ page: 'abc' }), RangeError);
   assert.throws(() => parsePageParams({ size: '0' }), RangeError);
   assert.throws(() => parsePageParams({ size: '101' }), RangeError);
+});
+
+test('paginate returns the first page for page 1', () => {
+  const items = Array.from({ length: 40 }, (_, i) => i + 1);
+  const result = paginate(items, { page: 1, size: 20 });
+  assert.deepEqual(result.items, items.slice(0, 20));
+  assert.equal(result.totalPages, 2);
+  assert.equal(result.hasNext, true);
+});
+
+test('paginate reports no next page on the last page', () => {
+  const items = Array.from({ length: 40 }, (_, i) => i + 1);
+  const result = paginate(items, { page: 2, size: 20 });
+  assert.deepEqual(result.items, items.slice(20));
+  assert.equal(result.hasNext, false);
 });
