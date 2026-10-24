@@ -3,7 +3,7 @@
 const http = require('node:http');
 const { verifyToken } = require('./tokens');
 const { parsePageParams, paginate } = require('./paginate');
-const { NotesStore } = require('./store');
+const { NotesStore, FileNotesStore } = require('./store');
 
 const MAX_BODY_BYTES = 64 * 1024;
 
@@ -59,24 +59,33 @@ function createApp({ secret, store = new NotesStore() }) {
 
       if (url.pathname === '/notes' && req.method === 'GET') {
         const params = parsePageParams(Object.fromEntries(url.searchParams));
-        return send(res, 200, paginate(store.listByOwner(claims.sub), params));
+        return send(res, 200, paginate(await store.listByOwner(claims.sub), params));
       }
       if (url.pathname === '/notes' && req.method === 'POST') {
         const body = await readJson(req);
         if (typeof body.text !== 'string' || body.text.trim() === '') {
           return send(res, 400, { error: 'text is required' });
         }
-        return send(res, 201, store.create(claims.sub, body.text));
+        return send(res, 201, await store.create(claims.sub, body.text));
       }
       if (idMatch && req.method === 'GET') {
-        const note = store.get(idMatch[1]);
+        const note = await store.get(idMatch[1]);
         if (!note || note.owner !== claims.sub) return send(res, 404, { error: 'not found' });
         return send(res, 200, note);
       }
+      if (idMatch && req.method === 'PATCH') {
+        const body = await readJson(req);
+        if (typeof body.text !== 'string' || body.text.trim() === '') {
+          return send(res, 400, { error: 'text is required' });
+        }
+        const note = await store.update(idMatch[1], body.text);
+        if (!note) return send(res, 404, { error: 'not found' });
+        return send(res, 200, note);
+      }
       if (idMatch && req.method === 'DELETE') {
-        const note = store.get(idMatch[1]);
+        const note = await store.get(idMatch[1]);
         if (!note || note.owner !== claims.sub) return send(res, 404, { error: 'not found' });
-        store.remove(note.id);
+        await store.remove(note.id);
         return send(res, 204);
       }
       return send(res, 404, { error: 'not found' });
@@ -88,8 +97,13 @@ function createApp({ secret, store = new NotesStore() }) {
   };
 }
 
-function start({ port = Number(process.env.PORT) || 3000, secret = process.env.TOKEN_SECRET } = {}) {
-  const server = http.createServer(createApp({ secret }));
+async function start({
+  port = Number(process.env.PORT) || 3000,
+  secret = process.env.TOKEN_SECRET,
+  file = process.env.NOTES_FILE || 'data/notes.json',
+} = {}) {
+  const store = await new FileNotesStore(file).load();
+  const server = http.createServer(createApp({ secret, store }));
   return new Promise((resolve) => server.listen(port, () => resolve(server)));
 }
 

@@ -64,3 +64,12 @@ test('empty text is rejected', () =>
     const res = await call(base, 'POST', '/notes', { user: 'alice', body: { text: '  ' } });
     assert.equal(res.status, 400);
   }));
+
+test('the owner can edit a note', () =>
+  withServer(async (base) => {
+    const created = await call(base, 'POST', '/notes', { user: 'alice', body: { text: 'draft' } });
+    const note = await created.json();
+    const res = await call(base, 'PATCH', `/notes/${note.id}`, { user: 'alice', body: { text: 'final' } });
+    assert.equal(res.status, 200);
+    assert.equal((await res.json()).text, 'final');
+  }));
