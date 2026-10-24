@@ -1,14 +1,14 @@
 'use strict';
 
 const crypto = require('node:crypto');
-const { parseDuration } = require('./duration');
+const ms = require('ms');
 
 function sign(payload, secret) {
   return crypto.createHmac('sha256', secret).update(payload).digest('base64url');
 }
 
 function issueToken(userId, secret, { ttl = '1h', now = Date.now() } = {}) {
-  const exp = Math.floor(now / 1000) + parseDuration(ttl);
+  const exp = Math.floor(now / 1000) + ms(ttl);
   const payload = Buffer.from(JSON.stringify({ sub: userId, exp })).toString('base64url');
   return `${payload}.${sign(payload, secret)}`;
 }

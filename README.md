@@ -1,7 +1,7 @@
 # pr-quorum-bench
 
 A tiny JSON notes API built on `node:http`, with HMAC-signed bearer tokens.
-No runtime dependencies.
+Token lifetimes accept [`ms`](https://www.npmjs.com/package/ms) strings such as `15m`, `1h` or `7d`.
 
 ## Run
 

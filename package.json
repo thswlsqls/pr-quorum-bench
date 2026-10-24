@@ -10,5 +10,8 @@
     "start": "node src/server.js",
     "test": "node --test"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ms": "2.1.3"
+  }
 }
