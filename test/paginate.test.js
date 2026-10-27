@@ -18,3 +18,9 @@ test('parsePageParams rejects out-of-range values', () => {
   assert.throws(() => parsePageParams({ size: '0' }), RangeError);
   assert.throws(() => parsePageParams({ size: '101' }), RangeError);
 });
+
+test('parsePageParams accepts per_page as an alias of size', () => {
+  assert.deepEqual(parsePageParams({ per_page: '30' }), { page: 1, size: 30 });
+  assert.deepEqual(parsePageParams({ size: '10', per_page: '30' }), { page: 1, size: 10 });
+  assert.throws(() => parsePageParams({ per_page: '101' }), RangeError);
+});

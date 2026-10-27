@@ -5,7 +5,8 @@ const MAX_PAGE_SIZE = 100;
 
 function parsePageParams(query) {
   const page = Number.parseInt(query.page ?? '1', 10);
-  const size = Number.parseInt(query.size ?? String(DEFAULT_PAGE_SIZE), 10);
+  // per_page is accepted as an alias of size for clients written against the v0 API
+  const size = Number.parseInt(query.size ?? query.per_page ?? String(DEFAULT_PAGE_SIZE), 10);
   if (!Number.isInteger(page) || page < 1) {
     throw new RangeError('page must be a positive integer');
   }
