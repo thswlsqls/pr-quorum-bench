@@ -6,8 +6,8 @@ class NotesStore {
     this.nextId = 1;
   }
 
-  create(owner, text) {
-    const note = { id: String(this.nextId++), owner, text, createdAt: new Date().toISOString() };
+  create(owner, text, tags = []) {
+    const note = { id: String(this.nextId++), owner, text, tags, createdAt: new Date().toISOString() };
     this.notes.set(note.id, note);
     return note;
   }

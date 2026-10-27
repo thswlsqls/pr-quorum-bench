@@ -64,3 +64,16 @@ test('empty text is rejected', () =>
     const res = await call(base, 'POST', '/notes', { user: 'alice', body: { text: '  ' } });
     assert.equal(res.status, 400);
   }));
+
+test('tags are stored with the note', () =>
+  withServer(async (base) => {
+    const created = await call(base, 'POST', '/notes', { user: 'alice', body: { text: 'hi', tags: ['work', 'todo'] } });
+    assert.equal(created.status, 201);
+    assert.deepEqual((await created.json()).tags, ['work', 'todo']);
+  }));
+
+test('a note without tags gets an empty list', () =>
+  withServer(async (base) => {
+    const created = await call(base, 'POST', '/notes', { user: 'alice', body: { text: 'hi' } });
+    assert.deepEqual((await created.json()).tags, []);
+  }));

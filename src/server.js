@@ -6,6 +6,8 @@ const { parsePageParams, paginate } = require('./paginate');
 const { NotesStore } = require('./store');
 
 const MAX_BODY_BYTES = 64 * 1024;
+const MAX_TEXT_LENGTH = 10000;
+const MAX_TAGS = 10;
 
 function send(res, status, body) {
   const data = body === undefined ? '' : JSON.stringify(body);
@@ -66,7 +68,14 @@ function createApp({ secret, store = new NotesStore() }) {
         if (typeof body.text !== 'string' || body.text.trim() === '') {
           return send(res, 400, { error: 'text is required' });
         }
-        return send(res, 201, store.create(claims.sub, body.text));
+        if (body.text.length > MAX_TEXT_LENGTH) {
+          send(res, 413, { error: `text must be at most ${MAX_TEXT_LENGTH} characters` });
+        }
+        const tags = body.tags ?? [];
+        if (!Array.isArray(tags) || tags.length > MAX_TAGS || !tags.every((t) => typeof t === 'string')) {
+          send(res, 400, { error: `tags must be an array of at most ${MAX_TAGS} strings` });
+        }
+        return send(res, 201, store.create(claims.sub, body.text, tags));
       }
       if (idMatch && req.method === 'GET') {
         const note = store.get(idMatch[1]);
