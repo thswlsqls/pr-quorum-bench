@@ -73,4 +73,6 @@ test('listing returns the owner notes on the first page', () =>
     const res = await call(base, 'GET', '/notes', { user: 'alice' });
     const body = await res.json();
     assert.deepEqual(body.items.map((n) => n.text), ['one', 'two']);
+    assert.equal(body.total, 2);
+    assert.equal(body.totalPages, 1);
   }));

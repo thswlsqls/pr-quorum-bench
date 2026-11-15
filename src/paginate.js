@@ -17,7 +17,7 @@ function parsePageParams(query) {
 
 function paginate(items, { page, size }) {
   const start = (page - 1) * size;
-  const totalPages = Math.floor(items.length / size);
+  const totalPages = Math.ceil(items.length / size);
   return {
     items: items.slice(start, start + size),
     page,

@@ -33,3 +33,29 @@ test('paginate reports no next page on the last page', () => {
   assert.deepEqual(result.items, items.slice(20));
   assert.equal(result.hasNext, false);
 });
+
+test('paginate counts the last partial page', () => {
+  const items = Array.from({ length: 45 }, (_, i) => i + 1);
+  const second = paginate(items, { page: 2, size: 20 });
+  assert.equal(second.totalPages, 3);
+  assert.equal(second.hasNext, true);
+  const third = paginate(items, { page: 3, size: 20 });
+  assert.deepEqual(third.items, items.slice(40));
+  assert.equal(third.hasNext, false);
+});
+
+test('paginate handles a list shorter than one page', () => {
+  const items = [1, 2, 3, 4, 5];
+  const result = paginate(items, { page: 1, size: 20 });
+  assert.equal(result.totalPages, 1);
+  assert.equal(result.hasNext, false);
+  assert.deepEqual(result.items, items);
+});
+
+test('paginate returns no items past the end', () => {
+  const items = Array.from({ length: 45 }, (_, i) => i + 1);
+  const result = paginate(items, { page: 4, size: 20 });
+  assert.deepEqual(result.items, []);
+  assert.equal(result.totalPages, 3);
+  assert.equal(result.hasNext, false);
+});
